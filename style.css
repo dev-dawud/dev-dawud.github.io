@@ -10,6 +10,51 @@ h1{
   color: #d74247;
 }
 
+.leftHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.leftHeader h1 {
+  margin: 0;
+}
+
+.rightHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: #a39ca0;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.menu-item svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.menu-item:hover {
+  color: #d74247;
+  background-color: #1c1013;
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid #d74247;
+  outline-offset: 3px;
+}
 h2 {
   color: white;
 }
@@ -27,3 +72,4 @@ hr {
   border-top: 2px solid #45272f;
   margin: 24px 0;
 }
+
