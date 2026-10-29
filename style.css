@@ -1,0 +1,29 @@
+body{
+
+background-color: black;
+
+
+}
+
+h1{
+
+  color: #d74247;
+}
+
+h2 {
+  color: white;
+}
+
+h2 .slashes {
+  color: #d74247;
+}
+
+p{
+    color: #a39ca0;
+}
+
+hr {
+  border: none;
+  border-top: 2px solid #45272f;
+  margin: 24px 0;
+}
