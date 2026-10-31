@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building My First Schnorr Proof in C++ | dev-dawud</title>
+  <meta name="description" content="Learning how Schnorr proofs work with small numbers: public keys, commitment, challenge, and response, before writing the C++ code.">
+  <!-- KaTeX setzt Formeln in \( ... \) und \[ ... \] automatisch. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css" integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js" integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/contrib/auto-render.min.js" integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous" onload="renderMathInElement(document.querySelector('.post'));"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="leftHeader">
+
+    <a class="site-name" href="index.html">
+      dev-dawud<span>@root:~$</span>
+    </a>
+
+    <nav class="rightHeader" aria-label="Main navigation">
+
+    <a class="menu-item"
+   href="index.html"
+   aria-label="home"
+   title="home">
+
+   <!-- Icon is AI-generated-->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M3 10 12 3l9 7v11h-6v-7H9v7H3Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </a>
+
+   <a class="menu-item"
+   href="https://github.com/dev-dawud"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="github-profile"
+   title="github-profile">
+
+   <!-- Icon is AI-generated-->
+   <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M12 .297a12 12 0 0 0-3.793 23.385c.6.111.82-.261.82-.577v-2.234c-3.338.726-4.043-1.416-4.043-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.418-1.305.762-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.301 1.23a11.52 11.52 0 0 1 6.006 0c2.291-1.552 3.297-1.23 3.297-1.23.655 1.652.243 2.873.119 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.216.694.825.576A12.001 12.001 0 0 0 12 .297Z"
+        />
+      </svg>
+    </a>
+  </nav>
+
+  </header>
+
+  <hr>
+
+  <main class="post">
+
+    <a class="back-link" href="index.html">← go back</a>
+
+    <article id="top">
+
+      <header class="post-header">
+        <h1>Building My First Schnorr Proof in C++</h1>
+        <p class="post-meta"><time datetime="2026-10-29">2026-10-29</time> · C++ / cryptography / learning notes</p>
+      </header>
+
+      <section id="introduction">
+        <h2><span class="slashes">//</span> …</h2>
+        <p>I wanted to expand my C++ skills, and since I’ve recently become interested in cryptography, this seemed like the perfect project to try my hand at...</p>
+
+        <p>So I searched online for something beginner-friendly (okay, I asked Gemini :) ). I got a lot of nonsensical suggestions, but one thing stood out in particular: “zero-knowledge proofs.”</p>
+
+        <p>The name sounded harmless enough, so I decided to give it a try.</p>
+
+        <p>I started researching online and quickly came across some pretty confusing explanations. Apparently, it’s about proving that you know a secret without ever revealing it. Sounds strange, doesn’t it?</p>
+
+        <p>Imagine you know a secret, and your colleague wants proof that you know it. But there’s a catch: You’re not allowed to tell him what the secret actually is.</p>
+
+        <p>Magic? Telepathy? Well, not quite.</p>
+
+        <p>You might be wondering where something like this is actually used. Surprisingly, zero-knowledge proofs have practical applications, particularly in cryptography, digital identity systems, and certain cryptocurrencies.</p>
+
+        <p>But how does it all work?</p>
+
+        <p>Well, computer scientists have a pretty useful language for explaining things like this: mathematics.</p>
+
+        <p>But don’t worry. It’s actually easier to understand than you might think. Trust me, I speak from experience.</p>
+
+        <p>Okay, so let’s go back to the example with you and your colleague.</p>
+
+        <p>You’re the prover, and your colleague is the verifier. Not mathematical enough yet? Don’t worry, we’ll get to that in a moment.</p>
+
+        <p>As the prover, you know a secret number x that’s used to calculate a public key y.</p>
+
+        <p>Mathematically, the relationship between the secret and public keys looks like this:</p>
+
+        <div class="formula" tabindex="0">\[ y = g^x \bmod p \]</div>
+
+        <p>Now you’re probably wondering where p and g come from and what on earth this modulo operator means.</p>
+
+        <p>Luckily, I have an answer for everything. Well, almost everything. If you’ve never heard of the <code>%</code> operator, you might want to ask ChatGPT. Just kidding! It simply gives you the remainder after division. For example: <code>27 % 23 = 4</code>.</p>
+
+        <p>Now let’s move on to g and p.</p>
+
+        <p><strong>p</strong> is a prime modulus. Basically, it’s a prime number that we use for modular arithmetic. If you have no idea what that means, feel free to look it up. ;)</p>
+
+        <p><strong>g</strong> is our generator. It’s a carefully chosen number whose powers generate a mathematical group or subgroup modulo p. IMPORTANT: We can’t just pick any number here. It has to satisfy certain mathematical properties.</p>
+
+        <p>That’s why I asked Gemini to help me choose suitable values for g and p. After all, it’s better at mental math than I am.</p>
+
+        <p>For my little experiment, I decided on the following values:</p>
+
+        <ul>
+          <li>\(p = 23\)</li>
+          <li>\(g = 2\)</li>
+        </ul>
+
+        <p>With these values, g generates a subgroup with 11 elements. These numbers were deliberately chosen to be very small, making them perfect for learning and experimenting.</p>
+
+        <p>Of course, they would be completely unsuitable for real-world security. But hey, we’re here to learn, not to protect a billion-dollar bank. :)</p>
+
+        <p>For my secret, I chose the number 4:</p>
+
+        <div class="formula" tabindex="0">\[ x = 4 \]</div>
+
+        <p>Nothing special about it. I just wanted to keep the math simple.</p>
+
+        <p>With our previously chosen values, we get a public key of y = 16:</p>
+
+        <div class="formula" tabindex="0">\[ y = 2^4 \bmod 23 = 16 \]</div>
+
+        <p>Now that we've calculated our public key, things get interesting. You and your friend can actually perform the entire verification process with just three messages. He's a dry texter.</p>
+
+      </section>
+
+      <section id="commitment-challenge-response">
+        <h2><span class="slashes">//</span> Commitment, Challenge, Response.</h2>
+
+        <p>Now, you're probably wondering: What kind of challenge are we talking about? Does the verifier make me solve a CAPTCHA or something?</p>
+
+        <p>Well, not quite.</p>
+
+        <h3>1. Commitment</h3>
+
+        <p>First, you (the prover) choose a random number r. Think of it like making a secret move in poker. You don't want your opponent to know what you're planning.</p>
+
+        <p>Next, you calculate:</p>
+
+        <div class="formula" tabindex="0">\[ t = g^r \bmod p \]</div>
+
+        <p>In your head, of course. Simple, right?</p>
+
+        <p>You then send t to the verifier, who has absolutely no idea what your randomly chosen r was.</p>
+
+        <h3>2. Challenge</h3>
+
+        <p>Now it's the verifier's turn. They generate a random number c and send it back to you.</p>
+
+        <p>At this point, we'll probably have gone through the entire alphabet. :)</p>
+
+        <p>But why do we need this random challenge?</p>
+
+        <p>Well, imagine you already knew which challenge c the verifier was going to send. You could potentially prepare a fake commitment and a matching response without actually knowing the secret x.</p>
+
+        <p>Not very secure, is it?</p>
+
+        <p>That's exactly why the verifier chooses c <strong>after</strong> receiving your commitment. You can't simply prepare your answer for a challenge you haven't seen yet.</p>
+
+        <p>Of course, our tiny example isn't particularly secure, but the principle becomes much stronger with properly chosen cryptographic parameters.</p>
+
+        <h3>3. Response</h3>
+
+        <p>Now it's your turn again.</p>
+
+        <p>You know your secret x, you remember your random number r, and you've just received the challenge c.</p>
+
+        <p>All the ingredients are there.</p>
+
+        <p>And guess what? Another letter joins the party.</p>
+
+        <p>Please welcome our newest friend: <strong>s</strong>.</p>
+
+        <p>You calculate your response using:</p>
+
+        <div class="formula" tabindex="0">\[ s = (r + c \times x) \bmod q \]</div>
+
+        <p>Wait, q? Seriously? Another letter?</p>
+
+        <p>Don't worry. In our example, q is simply 11, the number of elements in the subgroup generated by g.</p>
+
+        <p>And just like that, you've calculated your response without sending your secret x to anyone. Now the verifier simply checks whether \(g^s \bmod p\) equals \((t \cdot y^c) \bmod p\).</p>
+
+        <p>Sounds complicated? Well, let's take a look at what this actually looks like with our example:</p>
+
+        <div class="formula" tabindex="0">\[ p=23,\quad g=2,\quad q=11,\quad x=4 \]</div>
+
+        <p><strong>Commitment:</strong> Choose \(r = 5\)</p>
+
+        <div class="formula" tabindex="0">\[ t=2^5\bmod23=9 \]</div>
+
+        <p><strong>Challenge:</strong> The verifier chooses \(c = 3\)</p>
+
+        <p><strong>Response:</strong></p>
+
+        <div class="formula" tabindex="0">\[ s=(5+3\cdot4)\bmod11=6 \]</div>
+
+        <p><strong>Verification:</strong></p>
+
+        <div class="formula" tabindex="0">\[ \underbrace{2^6 \bmod 23}_{18} = \underbrace{(9 \cdot 16^3) \bmod 23}_{18} \]</div>
+
+        <p>And that's it! Well, mathematically speaking, anyway. Your C++ editor is probably still staring back at you with an empty file.</p>
+
+        <p>And that's exactly why I'd encourage you to try implementing this yourself instead of just mindlessly copying someone else's solution. Trust me, you'll be doing yourself a favor.</p>
+
+        <p>You don't have to write a perfectly working program right away. Just grab your iPad, editor, or, if you're feeling crazy enough, grab a pen and paper.</p>
+
+        <p>Start by sketching out the basic structure of your program. What variables will you need? Which functions would make sense? Do you even need classes?</p>
+
+        <p>Don't worry about every little detail just yet. Focus on understanding the overall flow of your program first.</p>
+
+        <p>Once you've figured that out, actually writing the C++ code will become a whole lot easier.</p>
+
+      </section>
+
+      <section id="complete-mathematical-procedure">
+        <h2><span class="slashes">//</span> Complete Mathematical Procedure</h2>
+
+        <h3>1. Parameters</h3>
+        <div class="formula" tabindex="0">
+          \[
+          \boxed{p=23,\quad g=2,\quad q=11,\quad x=4}
+          \]
+        </div>
+
+        <h3>2. Generation of the Public Key</h3>
+        <div class="formula" tabindex="0">
+          \[
+          \begin{aligned}
+          y &amp;= g^x \bmod p\\
+            &amp;= 2^4 \bmod 23\\
+            &amp;= 16
+          \end{aligned}
+          \]
+        </div>
+
+        <h3>3. Commitment</h3>
+        <p>The prover randomly selects \(r=5\).</p>
+        <div class="formula" tabindex="0">
+          \[
+          \begin{aligned}
+          t &amp;= g^r \bmod p\\
+            &amp;= 2^5 \bmod 23\\
+            &amp;= 32 \bmod 23\\
+            &amp;= 9
+          \end{aligned}
+          \]
+        </div>
+
+        <h3>4. Challenge</h3>
+        <p>The verifier chooses a random value:</p>
+        <div class="formula" tabindex="0">
+          \[
+          \boxed{c=3}
+          \]
+        </div>
+
+        <h3>5. Response</h3>
+        <div class="formula" tabindex="0">
+          \[
+          \begin{aligned}
+          s &amp;= (r+c\cdot x)\bmod q\\
+            &amp;= (5+3\cdot4)\bmod11\\
+            &amp;= 17\bmod11\\
+            &amp;= 6
+          \end{aligned}
+          \]
+        </div>
+
+        <h3>6. Verification</h3>
+        <p>The verifier checks:</p>
+        <div class="formula" tabindex="0">
+          \[
+          g^s\bmod p\stackrel{?}{=}(t\cdot y^c)\bmod p
+          \]
+        </div>
+
+        <div class="formula" tabindex="0">
+          \[
+          \underbrace{2^6\bmod23}_{18}
+          =
+          \underbrace{(9\cdot16^3)\bmod23}_{18}
+          \]
+        </div>
+
+        <div class="formula" tabindex="0">
+          \[
+          \boxed{18=18\quad\checkmark}
+          \]
+        </div>
+      </section>
+
+      <details class="implementation" id="implementation">
+        <summary><h2><span class="slashes">//</span> Implementation</h2></summary>
+
+        <div class="implementation-text">
+          <p>So, did you manage to implement it yourself? I hope so, because now it's time to show you how I approached it.</p>
+
+          <p>My solution is far from perfect, so if you came up with something better, congratulations. You officially have bragging rights. :)</p>
+
+          <h3>1. Planning Before Programming</h3>
+
+          <p>First, I took some incredibly professional notes to sketch out the basic structure of my program. I didn't want to jump straight into coding without having at least some idea of what I was doing.</p>
+
+          <p>And don't be surprised if the language looks a little strange. It's German, and my handwriting doesn't exactly make things easier.</p>
+
+          <figure class="planning-notes">
+            <div class="notes-gallery" tabindex="0" role="group" aria-label="Planning notes, scroll horizontally to see all five images">
+              <a href="img/schnorr-notes-parameters.jpg" aria-haspopup="dialog">
+                <img src="img/schnorr-notes-parameters.jpg" alt="Handwritten notes about the parameters and public and private keys" width="1389" height="1290" loading="lazy">
+                Parameters
+              </a>
+              <a href="img/schnorr-notes-overview.jpg" aria-haspopup="dialog">
+                <img src="img/schnorr-notes-overview.jpg" alt="Handwritten overview of the prover and verifier equations" width="1771" height="387" loading="lazy">
+                Overview
+              </a>
+              <a href="img/schnorr-notes-prover.jpg" aria-haspopup="dialog">
+                <img src="img/schnorr-notes-prover.jpg" alt="Planning the Prover class, public key calculation and commitment" width="1128" height="1243" loading="lazy">
+                Prover
+              </a>
+              <a href="img/schnorr-notes-challenge-response.jpg" aria-haspopup="dialog">
+                <img src="img/schnorr-notes-challenge-response.jpg" alt="Handwritten steps for generating the challenge and calculating the response" width="1095" height="1238" loading="lazy">
+                Challenge / response
+              </a>
+              <a href="img/schnorr-notes-verifier.jpg" aria-haspopup="dialog">
+                <img src="img/schnorr-notes-verifier.jpg" alt="Planning the Verifier class and its equality check" width="1383" height="821" loading="lazy">
+                Verifier
+              </a>
+            </div>
+            <figcaption>Open a note to enlarge it. Close it with Escape or by clicking outside the image. Scroll sideways to see more.</figcaption>
+          </figure>
+
+          <h3>2. Time to Write Some C++</h3>
+
+          <p>With my brilliant plan ready, I opened my editor and created two classes: <code>Prover</code> and <code>Verifier</code>.</p>
+
+          <p>The idea was pretty simple: each class would be responsible for its own part of the protocol.</p>
+
+          <p>The <code>Prover</code> class would handle generating the public key, creating the commitment, and calculating the response. Meanwhile, the <code>Verifier</code> class would generate the challenge and check whether the proof was valid.</p>
+
+          <p>Sounds easy enough, right?</p>
+
+          <p>Well, I started implementing my functions, including <code>calculatePBkey()</code>, <code>commitment()</code>, and <code>response()</code>. I defined my variables, wrote the calculations, and confidently clicked Compile.</p>
+
+          <p>Big mistake.</p>
+
+          <p>Suddenly, my compiler started throwing errors at me like there was no tomorrow. It felt like I was getting errors on line 12,324, even though my program barely had a few lines.</p>
+
+          <p>Naturally, I turned to the incredible resources available to programmers: Stack Overflow, Discord servers. Just kidding i headed straight to, Gemini.</p>
+
+          <p>Yes, I asked an AI for help debugging my code. Sue me. :)</p>
+
+          <p>One useful suggestion was to look into a library called <strong>GMP (GNU Multiple Precision Arithmetic Library)</strong>.</p>
+
+          <h3>3. My New Friend: GMP</h3>
+
+          <p>You might be wondering why I needed an additional library just to calculate a few numbers.</p>
+
+          <p>Well, here's the thing.</p>
+
+          <p>Real cryptographic applications often work with ridiculously large integers, far beyond what a normal C++ <code>int</code> can store.</p>
+
+          <p>That's where GMP comes in. It allows us to work with integers of arbitrary precision.</p>
+
+          <p>Now, to be fair, my tiny example with p = 23 doesn't actually require GMP. A normal integer would work perfectly fine.</p>
+
+          <p>But I wanted to experiment with a library that could also handle much larger numbers in the future.</p>
+
+          <p>One particularly useful function I discovered was <code>mpz_powm()</code>.</p>
+
+          <p>Instead of calculating a massive power first and then applying the modulo operator, it performs modular exponentiation directly.</p>
+
+          <p>For example, to calculate our public key, I used:</p>
+
+          <pre tabindex="0" aria-label="C++ code"><code>mpz_powm(gmp_y, gmp_g, gmp_x, gmp_p);</code></pre>
+
+          <p>And that's it. Our familiar equation, <code>y = g^x mod p</code>, translated into C++.</p>
+
+          <p>Pretty neat, isn't it?</p>
+
+          <p>Of course, GMP introduced some new things I had to learn, such as initializing large integers with <code>mpz_init()</code> and cleaning them up afterward with <code>mpz_clear()</code>.</p>
+
+          <p>Apparently, programming wasn't complicated enough already.</p>
+
+          <h3>4. Connecting the Prover and Verifier</h3>
+
+          <p>Once the individual functions were implemented, I needed to connect everything.</p>
+
+          <p>That's where my <code>main()</code> function came in.</p>
+
+          <p>First, I created an instance of each class. Then I followed the same order as the mathematical protocol we discussed earlier.</p>
+
+          <p>The prover calculates the public key <code>y</code> and generates the commitment <code>t</code>.</p>
+
+          <p>Next, the verifier generates a random challenge <code>c</code>.</p>
+
+          <p>The prover receives that challenge and calculates the response <code>s</code> using its secret <code>x</code>.</p>
+
+          <p>Finally, the verifier checks whether the equation holds.</p>
+
+          <p>For this, I used another GMP function: <code>mpz_cmp()</code>.</p>
+
+          <p>Here's something funny: when <code>mpz_cmp()</code> returns 0, it means the two numbers are equal.</p>
+
+          <p>Yes, zero means success. It's contradictory, isn't it? But that's just how C++ works.</p>
+
+          <p>If both sides of the equation match, my program prints "Succesful!"</p>
+
+          <p>And yes, I even managed to misspell "Successful". We'll call that a feature. :)</p>
+
+          <h3>5. Is My Program Actually Secure?</h3>
+
+          <p>Short answer: Absolutely not.</p>
+
+          <p>Long answer: Well, let me explain.</p>
+
+          <p>For starters, I'm using ridiculously small numbers. With p = 23, someone could easily try every possible secret until they found the right one.</p>
+
+          <p>Not exactly the kind of security you'd want for your bank account.</p>
+
+          <p>I also used <code>std::mt19937</code> to generate the random values for the commitment and challenge.</p>
+
+          <p>It's useful for learning and simulations, but it isn't a cryptographically secure random number generator.</p>
+
+          <p>Another limitation is that although GMP supports huge integers, parts of my program still convert the results back into ordinary C++ integers.</p>
+
+          <p>So there's definitely room for improvement.</p>
+
+          <p>But that's okay. The goal of this project wasn't to build production-ready cryptographic software. It was to understand how the Schnorr protocol works and implement the basic mathematics myself.</p>
+
+          <h3>6. What I Learned</h3>
+
+          <p>Looking back, this project taught me more than I initially expected.</p>
+
+          <p>I learned about modular arithmetic, public and private keys, zero-knowledge proofs, and how to use GMP in C++.</p>
+
+          <p>But more importantly, I learned that understanding the mathematics before writing the code makes the implementation much easier.</p>
+
+          <p>My original plan was to find a small, beginner-friendly C++ project.</p>
+
+          <p>Instead, I ended up researching cryptography, writing mathematical equations on my iPad, fighting compiler errors, and asking an AI why my code wasn't working.</p>
+
+          <p>So yeah, pretty much a normal day in programming.</p>
+
+          <p>Would I do it again? Absolutely.</p>
+
+          <p>And if you're still staring at your empty C++ file, wondering whether you should give it a try, here's my advice:</p>
+
+          <p><strong>Start small. Make mistakes. Understand what went wrong. And most importantly, don't just copy code you don't understand.</strong></p>
+
+          <p>That's how we get better.</p>
+
+          <p>Thanks for reading, and happy coding! :)</p>
+
+        </div>
+      </details>
+
+      <footer class="post-footer">
+        <a href="index.html">← go back</a>
+        <a href="#top">back to top ↑</a>
+      </footer>
+
+    </article>
+  </main>
+  <dialog class="image-viewer" id="image-viewer" aria-labelledby="image-title">
+    <div class="image-viewer-header">
+      <p id="image-title">Planning notes</p>
+      <form method="dialog">
+        <button autofocus>Close</button>
+      </form>
+    </div>
+    <img id="large-note" alt="">
+  </dialog>
+
+  <script src="gallery.js"></script>
+</body>
+</html>
